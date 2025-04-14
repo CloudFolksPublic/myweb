@@ -16,15 +16,17 @@
     const region = "ap-south-1";
     const bucketName = "cloudfolks-demo-bucket";
 
-    // ✅ Updated hosted UI domain (no prefix, full domain instead)
+    // ✅ Use actual hosted UI domain directly
     const hostedUIDomain = "https://ap-south-1sm3u7yxiz.auth.ap-south-1.amazoncognito.com";
     const redirectUri = window.location.origin + window.location.pathname;
 
+    // Login button triggers hosted UI
     document.getElementById('loginBtn').onclick = function () {
       const loginUrl = `${hostedUIDomain}/login?response_type=token&client_id=${clientId}&redirect_uri=${redirectUri}`;
       window.location.href = loginUrl;
     };
 
+    // Parse id_token from URL hash after login
     function getTokenFromUrl() {
       const hash = window.location.hash.substr(1);
       const result = {};
