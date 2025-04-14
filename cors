@@ -1,0 +1,16 @@
+[
+    {
+        "AllowedHeaders": [
+            "*"
+        ],
+        "AllowedMethods": [
+            "GET",
+            "PUT",
+            "POST"
+        ],
+        "AllowedOrigins": [
+            "https://cloudfolkspublic.github.io"
+        ],
+        "ExposeHeaders": []
+    }
+]
