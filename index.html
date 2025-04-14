@@ -1,44 +1,75 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>S3 Access via Cognito</title>
+  <title>CloudFolks S3 Access</title>
   <script src="https://sdk.amazonaws.com/js/aws-sdk-2.814.0.min.js"></script>
 </head>
 <body>
-  <h2>List S3 Files (Temporary Token)</h2>
+  <h2>🗂️ S3 File List (After Cognito Login)</h2>
+  <button id="loginBtn">Login with Cognito</button>
   <ul id="fileList"></ul>
 
   <script>
-    // AWS Setup
-    AWS.config.region = 'ap-south-1'; // your region
-    AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-      IdentityPoolId: 'ap-south-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-    });
+    const userPoolId = "ap-south-1_sM3u7yXIz";
+    const clientId = "56t38bh0b2nn6pjkjachr81qu7";
+    const identityPoolId = "ap-south-1:103484b7-0624-49c9-beab-bcd551e82eda";
+    const region = "ap-south-1";
+    const bucketName = "cloudfolks-demo-bucket";
+    const domainPrefix = "cloudfolkspool"; // your Cognito Hosted UI domain prefix
 
-    AWS.config.credentials.get(function(err) {
-      if (err) {
-        console.error(err);
-        return;
-      }
+    const redirectUri = window.location.origin + window.location.pathname;
 
-      const s3 = new AWS.S3();
-      const params = {
-        Bucket: 'your-bucket-name'
-      };
+    document.getElementById('loginBtn').onclick = function () {
+      const loginUrl = `https://${domainPrefix}.auth.${region}.amazoncognito.com/login?response_type=token&client_id=${clientId}&redirect_uri=${redirectUri}`;
+      window.location.href = loginUrl;
+    };
 
-      s3.listObjectsV2(params, function(err, data) {
-        if (err) {
-          console.error("S3 Access Error", err);
-        } else {
-          const list = document.getElementById("fileList");
-          data.Contents.forEach(function(obj) {
-            const li = document.createElement("li");
-            li.innerText = obj.Key;
-            list.appendChild(li);
-          });
+    function getTokenFromUrl() {
+      const hash = window.location.hash.substr(1);
+      const result = {};
+      hash.split('&').forEach(function (part) {
+        const item = part.split('=');
+        result[item[0]] = decodeURIComponent(item[1]);
+      });
+      return result.id_token;
+    }
+
+    const idToken = getTokenFromUrl();
+
+    if (idToken) {
+      AWS.config.region = region;
+      AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+        IdentityPoolId: identityPoolId,
+        Logins: {
+          [`cognito-idp.${region}.amazonaws.com/${userPoolId}`]: idToken
         }
       });
-    });
+
+      AWS.config.credentials.get(function (err) {
+        if (err) {
+          console.error("Credentials error:", err);
+          return;
+        }
+
+        const s3 = new AWS.S3();
+        const params = {
+          Bucket: bucketName
+        };
+
+        s3.listObjectsV2(params, function (err, data) {
+          if (err) {
+            console.error("S3 List Error:", err);
+          } else {
+            const list = document.getElementById("fileList");
+            data.Contents.forEach(function (obj) {
+              const li = document.createElement("li");
+              li.innerText = obj.Key;
+              list.appendChild(li);
+            });
+          }
+        });
+      });
+    }
   </script>
 </body>
 </html>
