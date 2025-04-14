@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>S3 Access via Cognito</title>
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.814.0.min.js"></script>
+</head>
+<body>
+  <h2>List S3 Files (Temporary Token)</h2>
+  <ul id="fileList"></ul>
+
+  <script>
+    // AWS Setup
+    AWS.config.region = 'ap-south-1'; // your region
+    AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+      IdentityPoolId: 'ap-south-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+    });
+
+    AWS.config.credentials.get(function(err) {
+      if (err) {
+        console.error(err);
+        return;
+      }
+
+      const s3 = new AWS.S3();
+      const params = {
+        Bucket: 'your-bucket-name'
+      };
+
+      s3.listObjectsV2(params, function(err, data) {
+        if (err) {
+          console.error("S3 Access Error", err);
+        } else {
+          const list = document.getElementById("fileList");
+          data.Contents.forEach(function(obj) {
+            const li = document.createElement("li");
+            li.innerText = obj.Key;
+            list.appendChild(li);
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
