@@ -15,12 +15,13 @@
     const identityPoolId = "ap-south-1:103484b7-0624-49c9-beab-bcd551e82eda";
     const region = "ap-south-1";
     const bucketName = "cloudfolks-demo-bucket";
-    const domainPrefix = "cloudfolkspool"; // your Cognito Hosted UI domain prefix
 
+    // ✅ Updated hosted UI domain (no prefix, full domain instead)
+    const hostedUIDomain = "https://ap-south-1sm3u7yxiz.auth.ap-south-1.amazoncognito.com";
     const redirectUri = window.location.origin + window.location.pathname;
 
     document.getElementById('loginBtn').onclick = function () {
-      const loginUrl = `https://${domainPrefix}.auth.${region}.amazoncognito.com/login?response_type=token&client_id=${clientId}&redirect_uri=${redirectUri}`;
+      const loginUrl = `${hostedUIDomain}/login?response_type=token&client_id=${clientId}&redirect_uri=${redirectUri}`;
       window.location.href = loginUrl;
     };
 
