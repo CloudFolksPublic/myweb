@@ -19,7 +19,8 @@
     const hostedUIDomain = "https://ap-south-1sm3u7yxiz.auth.ap-south-1.amazoncognito.com";
     const redirectUri = window.location.origin + window.location.pathname;
 
-    const loginUrl = `${hostedUIDomain}/login?response_type=token&client_id=${clientId}&scope=email+openid+profile&redirect_uri=${redirectUri}`;
+    // ✅ Updated login URL with correct scope for Google profile access
+    const loginUrl = `${hostedUIDomain}/login?response_type=token&client_id=${clientId}&scope=email+openid+https://www.googleapis.com/auth/userinfo.profile&redirect_uri=${redirectUri}&identity_provider=Google`;
 
     document.getElementById('loginBtn').onclick = function () {
       window.location.href = loginUrl;
