@@ -6,11 +6,10 @@
 </head>
 <body>
   <h2>🗂️ List & Download S3 Files (Temporary Token)</h2>
-  <button id="loginBtn">Login with Cognito</button>
+  <button id="loginBtn">Login with Google via Cognito</button>
   <ul id="fileList"></ul>
 
   <script>
-    const userPoolId = "ap-south-1_sM3u7yXIz";
     const clientId = "56t38bh0b2nn6pjkjachr81qu7";
     const identityPoolId = "ap-south-1:103484b7-0624-49c9-beab-bcd551e82eda";
     const region = "ap-south-1";
@@ -19,8 +18,8 @@
     const hostedUIDomain = "https://ap-south-1sm3u7yxiz.auth.ap-south-1.amazoncognito.com";
     const redirectUri = window.location.origin + window.location.pathname;
 
-    const loginUrl = `${hostedUIDomain}/login?response_type=token&client_id=${clientId}&scope=email+openid+profile&redirect_uri=${redirectUri}`;
-    
+    const loginUrl = `${hostedUIDomain}/login?response_type=token&client_id=${clientId}&scope=email+openid+profile&redirect_uri=${redirectUri}&identity_provider=Google`;
+
     document.getElementById('loginBtn').onclick = function () {
       window.location.href = loginUrl;
     };
@@ -42,13 +41,13 @@
       AWS.config.credentials = new AWS.CognitoIdentityCredentials({
         IdentityPoolId: identityPoolId,
         Logins: {
-          [`cognito-idp.${region}.amazonaws.com/${userPoolId}`]: idToken
+          'accounts.google.com': idToken // ✅ Updated for Google OIDC
         }
       });
 
       AWS.config.credentials.get(function (err) {
         if (err) {
-          console.error("Credentials error:", err);
+          console.error("❌ Credentials error:", err);
           return;
         }
 
@@ -59,17 +58,16 @@
 
         s3.listObjectsV2(params, function (err, data) {
           if (err) {
-            console.error("S3 List Error:", err);
+            console.error("❌ S3 List Error:", err);
           } else {
             const list = document.getElementById("fileList");
             data.Contents.forEach(function (obj) {
               const li = document.createElement("li");
 
-              // Create presigned URL for download
               const url = s3.getSignedUrl('getObject', {
                 Bucket: bucketName,
                 Key: obj.Key,
-                Expires: 60 // valid for 60 seconds
+                Expires: 60
               });
 
               const link = document.createElement("a");
