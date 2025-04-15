@@ -10,13 +10,13 @@
   <ul id="fileList"></ul>
 
   <script>
-    const clientId = "56t38bh0b2nn6pjkjachr81qu7";
-    const identityPoolId = "ap-south-1:103484b7-0624-49c9-beab-bcd551e82eda";
-    const userPoolId = "ap-south-1_sM3u7yXIz";
+    const clientId = "6es2i64p3v073s4b6ohv020v8v";
+    const identityPoolId = "ap-south-1:86c58e30-3403-4d2d-baf5-c9b83780f138";
+    const userPoolId = "ap-south-1_47ruA5LJB";
     const region = "ap-south-1";
     const bucketName = "cloudfolks-demo-bucket";
 
-    const hostedUIDomain = "https://ap-south-1sm3u7yxiz.auth.ap-south-1.amazoncognito.com";
+    const hostedUIDomain = "https://ap-south-147rua5ljb.auth.ap-south-1.amazoncognito.com";
     const redirectUri = window.location.origin + window.location.pathname;
 
     const loginUrl = `${hostedUIDomain}/login?response_type=token&client_id=${clientId}&scope=email+openid&redirect_uri=${redirectUri}&identity_provider=Google`;
@@ -35,32 +35,14 @@
       return result.id_token;
     }
 
-    function parseJwt(token) {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      return JSON.parse(decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join('')));
-    }
-
     const idToken = getTokenFromUrl();
 
     if (idToken) {
-      const decoded = parseJwt(idToken);
-      const issuer = decoded.iss;
-
-      let loginProvider;
-      if (issuer.includes("accounts.google.com")) {
-        loginProvider = "accounts.google.com";
-      } else {
-        loginProvider = `cognito-idp.${region}.amazonaws.com/${userPoolId}`;
-      }
-
       AWS.config.region = region;
       AWS.config.credentials = new AWS.CognitoIdentityCredentials({
         IdentityPoolId: identityPoolId,
         Logins: {
-          [loginProvider]: idToken
+          'accounts.google.com': idToken
         }
       });
 
@@ -99,6 +81,4 @@
         });
       });
     }
-  </script>
-</body>
-</html>
+  </script
