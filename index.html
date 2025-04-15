@@ -1,24 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>CloudFolks S3 Access</title>
+  <title>List & Download S3 Files</title>
   <script src="https://sdk.amazonaws.com/js/aws-sdk-2.814.0.min.js"></script>
 </head>
 <body>
-  <h2>🗂️ List & Download S3 Files (Temporary Token)</h2>
-  <button id="loginBtn">Login with Google via Cognito</button>
+  <h2>📂 CloudFolks - S3 File Browser</h2>
+  <button id="loginBtn">Login with Cognito</button>
   <ul id="fileList"></ul>
 
   <script>
     const clientId = "56t38bh0b2nn6pjkjachr81qu7";
     const identityPoolId = "ap-south-1:103484b7-0624-49c9-beab-bcd551e82eda";
+    const userPoolId = "ap-south-1_sM3u7yXIz";
     const region = "ap-south-1";
     const bucketName = "cloudfolks-demo-bucket";
 
     const hostedUIDomain = "https://ap-south-1sm3u7yxiz.auth.ap-south-1.amazoncognito.com";
     const redirectUri = window.location.origin + window.location.pathname;
 
-    const loginUrl = `${hostedUIDomain}/login?response_type=token&client_id=${clientId}&scope=email+openid+profile&redirect_uri=${redirectUri}&identity_provider=Google`;
+    const loginUrl = `${hostedUIDomain}/login?response_type=token&client_id=${clientId}&scope=email+openid+profile&redirect_uri=${redirectUri}`;
 
     document.getElementById('loginBtn').onclick = function () {
       window.location.href = loginUrl;
@@ -41,13 +42,13 @@
       AWS.config.credentials = new AWS.CognitoIdentityCredentials({
         IdentityPoolId: identityPoolId,
         Logins: {
-          'accounts.google.com': idToken // ✅ Updated for Google OIDC
+          [`cognito-idp.${region}.amazonaws.com/${userPoolId}`]: idToken
         }
       });
 
       AWS.config.credentials.get(function (err) {
         if (err) {
-          console.error("❌ Credentials error:", err);
+          console.error("❌ Credential Error:", err);
           return;
         }
 
@@ -74,9 +75,9 @@
               link.href = url;
               link.innerText = obj.Key;
               link.download = obj.Key;
-              link.style.textDecoration = "none";
-              link.style.color = "#1a73e8";
               link.target = "_blank";
+              link.style.color = "#0070f3";
+              link.style.textDecoration = "none";
 
               li.appendChild(link);
               list.appendChild(li);
