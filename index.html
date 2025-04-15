@@ -10,75 +10,79 @@
   <ul id="fileList"></ul>
 
   <script>
-    const clientId = "6es2i64p3v073s4b6ohv020v8v";
-    const identityPoolId = "ap-south-1:86c58e30-3403-4d2d-baf5-c9b83780f138";
-    const userPoolId = "ap-south-1_47ruA5LJB";
-    const region = "ap-south-1";
-    const bucketName = "cloudfolks-demo-bucket";
+    window.onload = function () {
+      const clientId = "6es2i64p3v073s4b6ohv020v8v";
+      const identityPoolId = "ap-south-1:86c58e30-3403-4d2d-baf5-c9b83780f138";
+      const userPoolId = "ap-south-1_47ruA5LJB";
+      const region = "ap-south-1";
+      const bucketName = "cloudfolks-demo-bucket";
 
-    const hostedUIDomain = "https://ap-south-147rua5ljb.auth.ap-south-1.amazoncognito.com";
-    const redirectUri = window.location.origin + window.location.pathname;
+      const hostedUIDomain = "https://ap-south-147rua5ljb.auth.ap-south-1.amazoncognito.com";
+      const redirectUri = window.location.origin + window.location.pathname;
 
-    const loginUrl = `${hostedUIDomain}/login?response_type=token&client_id=${clientId}&scope=email+openid&redirect_uri=${redirectUri}&identity_provider=Google`;
+      const loginUrl = `${hostedUIDomain}/login?response_type=token&client_id=${clientId}&scope=email+openid&redirect_uri=${redirectUri}&identity_provider=Google`;
 
-    document.getElementById('loginBtn').onclick = function () {
-      window.location.href = loginUrl;
-    };
+      document.getElementById('loginBtn').onclick = function () {
+        window.location.href = loginUrl;
+      };
 
-    function getTokenFromUrl() {
-      const hash = window.location.hash.substr(1);
-      const result = {};
-      hash.split('&').forEach(function (part) {
-        const item = part.split('=');
-        result[item[0]] = decodeURIComponent(item[1]);
-      });
-      return result.id_token;
-    }
+      function getTokenFromUrl() {
+        const hash = window.location.hash.substr(1);
+        const result = {};
+        hash.split('&').forEach(function (part) {
+          const item = part.split('=');
+          result[item[0]] = decodeURIComponent(item[1]);
+        });
+        return result.id_token;
+      }
 
-    const idToken = getTokenFromUrl();
+      const idToken = getTokenFromUrl();
 
-    if (idToken) {
-      AWS.config.region = region;
-      AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-        IdentityPoolId: identityPoolId,
-        Logins: {
-          'accounts.google.com': idToken
-        }
-      });
-
-      AWS.config.credentials.get(function (err) {
-        if (err) {
-          console.error("❌ Credential Error:", err);
-          return;
-        }
-
-        const s3 = new AWS.S3();
-        const params = { Bucket: bucketName };
-
-        s3.listObjectsV2(params, function (err, data) {
-          if (err) {
-            console.error("❌ S3 List Error:", err);
-          } else {
-            const list = document.getElementById("fileList");
-            data.Contents.forEach(function (obj) {
-              const li = document.createElement("li");
-              const url = s3.getSignedUrl('getObject', {
-                Bucket: bucketName,
-                Key: obj.Key,
-                Expires: 60
-              });
-              const link = document.createElement("a");
-              link.href = url;
-              link.innerText = obj.Key;
-              link.download = obj.Key;
-              link.target = "_blank";
-              link.style.color = "#0070f3";
-              link.style.textDecoration = "none";
-              li.appendChild(link);
-              list.appendChild(li);
-            });
+      if (idToken) {
+        AWS.config.region = region;
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+          IdentityPoolId: identityPoolId,
+          Logins: {
+            'accounts.google.com': idToken
           }
         });
-      });
-    }
-  </script
+
+        AWS.config.credentials.get(function (err) {
+          if (err) {
+            console.error("❌ Credential Error:", err);
+            return;
+          }
+
+          const s3 = new AWS.S3();
+          const params = { Bucket: bucketName };
+
+          s3.listObjectsV2(params, function (err, data) {
+            if (err) {
+              console.error("❌ S3 List Error:", err);
+            } else {
+              const list = document.getElementById("fileList");
+              data.Contents.forEach(function (obj) {
+                const li = document.createElement("li");
+                const url = s3.getSignedUrl('getObject', {
+                  Bucket: bucketName,
+                  Key: obj.Key,
+                  Expires: 60
+                });
+                const link = document.createElement("a");
+                link.href = url;
+                link.innerText = obj.Key;
+                link.download = obj.Key;
+                link.target = "_blank";
+                link.style.color = "#0070f3";
+                link.style.textDecoration = "none";
+                li.appendChild(link);
+                list.appendChild(li);
+              });
+            }
+          });
+        });
+      }
+    };
+  </script>
+</body>
+</html>
