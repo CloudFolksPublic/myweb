@@ -36,14 +36,33 @@
         return result.id_token;
       }
 
+      function parseJwt(token) {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+
+        return JSON.parse(jsonPayload);
+      }
+
       const idToken = getTokenFromUrl();
 
       if (idToken) {
+        const decoded = parseJwt(idToken);
+        let loginProvider;
+
+        if (decoded.iss.includes("accounts.google.com")) {
+          loginProvider = "accounts.google.com";
+        } else {
+          loginProvider = `cognito-idp.${region}.amazonaws.com/${userPoolId}`;
+        }
+
         AWS.config.region = region;
         AWS.config.credentials = new AWS.CognitoIdentityCredentials({
           IdentityPoolId: identityPoolId,
           Logins: {
-            'accounts.google.com': idToken
+            [loginProvider]: idToken
           }
         });
 
